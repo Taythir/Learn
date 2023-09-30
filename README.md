@@ -1,2 +1,2 @@
 # Learn
-An alternative for Quilt learn
+An alternative for Quizlet learn
