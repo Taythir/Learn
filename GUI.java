@@ -13,15 +13,16 @@ import javax.swing.JTextField;
 
 public class GUI implements ActionListener{
 	
-	private JFrame frame;
+	private static JFrame frame;
 	private JButton restartButton, checkButton, addWordsButton;
 	private JLabel ticker;
 	private JPanel panel;
 	
-
-	private JFrame addFrame;
+    // word by definition frames and ..
+	private JButton learn; // button to choose which option, learn or flashcards or ...
 	private JButton addButton;
 	private JButton readyButton;
+	private JFrame addFrame;
     private JPanel addPanel;
     private JTextField enterNewWord;
     private JTextField enterNewDefinition;
@@ -33,11 +34,53 @@ public class GUI implements ActionListener{
     private JPanel checkPanel;
     private JButton resumeButton;
     
+    //flashcards
+    private JButton flashcards; // button to choose which option, learn or flashcards or ...
+    private JButton flip;
+    private JButton nextFlashcard;
+    boolean definitionIsShowing; // boolean shows true if definition side of flashcard is what's showing
+    
+    //To check the word list
+    private JButton viewWords;
+    //private JLabel list;
+    
     static Word currentWord;
 	
 	public GUI() {
 		currentWord = Library.nextWord();
 		Library.setIntroduced();
+		
+	  // display options to choose
+		frame = new JFrame();
+		frame.setSize(650, 650);
+		
+		panel = new JPanel();
+	    panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
+	    panel.setLayout(new GridLayout(0, 1));
+		
+		//Button to view word set
+		viewWords = new JButton("Learning Set");
+		viewWords.addActionListener(this);
+		frame.add(viewWords, BorderLayout.NORTH);
+		
+		//adds button to choose to do learn 
+		learn = new JButton("Learn");
+		learn.addActionListener(this);
+		panel.add(learn, BorderLayout.CENTER);
+		
+		//adds button to choose to do flashcards
+		flashcards = new JButton("Flashcards");
+		flashcards.addActionListener(this);
+		panel.add(flashcards, BorderLayout.SOUTH);
+		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		panel.setVisible(true);
+		
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	
+	public void wordByDefinition() {  //Test on getting the right word by giving the user the definition
 		
 		frame = new JFrame();
 		
@@ -50,7 +93,7 @@ public class GUI implements ActionListener{
 		checkButton = new JButton("Check");
 		checkButton.addActionListener(this);
 		
-		ticker = new JLabel("Words Mastered: " + Library.mastered + "  Words Learning: " + Library.learning + "  Words Not Introduced Yet: " + Library.notIntroduced);
+		ticker = new JLabel("Words Mastered: " + Library.mastered + "  Words Learning: " + Library.learning + "  Unfamiliar Words: " + Library.notIntroduced);
 		
 		panel = new JPanel();
 	    panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 10, 30));
@@ -83,6 +126,30 @@ public class GUI implements ActionListener{
 	    
 	}
 	
+	public void flashcards() {
+		
+		frame = new JFrame();
+		frame.setSize(600, 600);
+		frame.setTitle("Flashcards");
+		
+		flip = new JButton(currentWord.getWrd());  //gets current word spelling
+		definitionIsShowing = false;
+		
+		frame.add(flip);
+		flip.addActionListener(this);
+		
+		addNextFlashCardButton();
+		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+	}
+	
+	public void learningSet() {
+		frame = new JFrame();
+		frame.setSize(550, 550);
+		
+		
+	}
 	
 	public static void main (String[] args) throws IOException {
             
@@ -90,6 +157,14 @@ public class GUI implements ActionListener{
 		    new GUI(); 
 
 		    
+	}
+	
+	public static void startRound() {
+		frame.dispose();
+		
+		frame = new JFrame();
+		
+		
 	}
 
 	
@@ -153,12 +228,22 @@ public class GUI implements ActionListener{
 		checkScreen.setVisible(true);
     }
 
+    // Function to add the next flashcard button
+    public void addNextFlashCardButton() {
+    	nextFlashcard = new JButton("Next Flashcard");
+    	nextFlashcard.addActionListener(this);
+		frame.add(nextFlashcard, BorderLayout.SOUTH);
+    }
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		Object listen = e.getSource();
 		
+		if (listen == learn)
+		{
+			wordByDefinition();
+		}
 		if(listen == restartButton) {
 			
 		}
@@ -188,7 +273,56 @@ public class GUI implements ActionListener{
 		}
 		if (listen == resumeButton) {
 			checkScreen.dispose();
-			new GUI();
+			wordByDefinition();
+		}
+		
+		// Flashcards
+		if (listen == flashcards)
+		{
+			flashcards();
+		}
+		if (listen == flip) {
+			if (definitionIsShowing == false)
+			{
+			    frame.remove(flip);
+			    flip = new JButton(currentWord.getDefinition());
+			    frame.add(flip);
+			    flip.addActionListener(this);
+			    
+			    frame.remove(nextFlashcard);
+			    addNextFlashCardButton();
+
+			    frame.setVisible(true);
+			    definitionIsShowing = true;    
+			    
+			}
+			else
+			{
+				//Clicking on the word will cause the flashcard to flip
+				frame.remove(flip);
+				flip = new JButton(currentWord.getWrd());
+				flip.addActionListener(this);
+				frame.add(flip);
+				
+				definitionIsShowing = false;
+				
+				frame.remove(nextFlashcard);
+				//Next Flashcard button to move to the next word
+				addNextFlashCardButton();
+				
+				frame.setVisible(true);
+			}
+		}
+		
+		if (listen == nextFlashcard) {
+			currentWord = Library.nextWord(); //changes current word to another random word in library
+			flashcards(); // calls flashcards function again, this time using the new current word
+		}
+		
+		// View Words set
+		if (listen == viewWords)
+		{
+			
 		}
 	}
 	
